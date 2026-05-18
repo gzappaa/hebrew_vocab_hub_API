@@ -1,0 +1,14 @@
+.env
+venv
+catav.json
+here.txt
+tests.txt
+tiny.json
+tests_done.txt
+ROADMAP.MD
+__pycache__/
+DATABASE/tests/__pycache__
+.pytest_cache/
+roadmap.txt
+.env.*
+vocab_dataset.json

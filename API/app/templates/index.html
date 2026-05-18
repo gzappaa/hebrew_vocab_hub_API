@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hebrew Vocab Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: #f7f7f7;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+            padding: 0 2rem;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1.8rem;
+        }
+
+        .nav-logo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 1.8rem;
+        }
+
+        .nav-links a {
+            font-size: 0.8rem;
+            color: #888;
+            text-decoration: none;
+        }
+        .nav-links a:hover { color: #1a1a1a; }
+
+        .author-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            color: #bbb;
+            text-decoration: none;
+            border: 1px solid #e0e0e0;
+            padding: 0.2rem 0.55rem;
+            border-radius: 2px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .author-badge:hover { color: #555; border-color: #aaa; }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            gap: 2.5rem;
+        }
+
+        .title-block {
+            text-align: center;
+        }
+
+        .title-block h1 {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 0.3rem;
+        }
+
+        .title-block p {
+            font-size: 0.8rem;
+            color: #999;
+            font-weight: 300;
+        }
+
+        .search-wrap {
+            width: min(520px, 92vw);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .search-row {
+            display: flex;
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .search-row:focus-within {
+            border-color: #aaa;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 0.7rem 1rem;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 0.95rem;
+            color: #1a1a1a;
+            background: transparent;
+        }
+        .search-input::placeholder { color: #bbb; }
+
+        .search-btn {
+            border: none;
+            border-left: 1px solid #d0d0d0;
+            background: #fff;
+            padding: 0 1rem;
+            cursor: pointer;
+            color: #555;
+            font-size: 0.85rem;
+            font-family: 'IBM Plex Mono', monospace;
+            transition: background 0.15s;
+        }
+        .search-btn:hover { background: #f0f0f0; }
+
+        .type-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.75rem;
+        }
+
+        .type-pill {
+            padding: 0.28rem 0.75rem;
+            border: 1px solid #d8d8d8;
+            border-radius: 2px;
+            font-size: 0.72rem;
+            color: #888;
+            cursor: pointer;
+            background: #fff;
+            transition: all 0.12s;
+            user-select: none;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .type-pill input { display: none; }
+        .type-pill:hover { border-color: #aaa; color: #444; }
+        .type-pill.active {
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+            color: #f7f7f7;
+        }
+
+        footer {
+            border-top: 1px solid #e0e0e0;
+            padding: 1rem 2rem;
+            text-align: center;
+            font-size: 0.72rem;
+            color: #bbb;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-left">
+        <a href="/" class="nav-logo">hebrew_vocab_hub</a>
+        <ul class="nav-links">
+            <li><a href="/search">search</a></li>
+            <li><a href="/posts">browse</a></li>
+            <li><a href="/api/posts">api</a></li>
+        </ul>
+    </div>
+    <a href="https://github.com/gzappaa" target="_blank" class="author-badge">gzappaa</a>
+</nav>
+
+<main>
+    <div class="title-block">
+        <h1>Hebrew Vocabulary Hub</h1>
+        <p>Search words, roots, conjugations and more</p>
+    </div>
+
+    <div class="search-wrap">
+        <form action="/search" method="get">
+            <input type="hidden" name="type" id="search-type-input" value="meaning">
+
+            <div class="search-row">
+                <input
+                    class="search-input"
+                    type="text"
+                    name="query"
+                    placeholder="Search…"
+                    autocomplete="off"
+                    dir="auto"
+                >
+                <button class="search-btn" type="submit">search</button>
+            </div>
+
+            <div class="type-pills">
+                <label class="type-pill active">
+                    <input type="radio" name="type_ui" value="meaning" checked onchange="setType(this)">
+                    meaning
+                </label>
+                <label class="type-pill">
+                    <input type="radio" name="type_ui" value="word" onchange="setType(this)">
+                    word
+                </label>
+                <label class="type-pill">
+                    <input type="radio" name="type_ui" value="transcription" onchange="setType(this)">
+                    transcription
+                </label>
+                <label class="type-pill">
+                    <input type="radio" name="type_ui" value="part_of_speech" onchange="setType(this)">
+                    part of speech
+                </label>
+                <label class="type-pill">
+                    <input type="radio" name="type_ui" value="root" onchange="setType(this)">
+                    root
+                </label>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer>
+    hebrew_vocab_hub · api v1
+</footer>
+
+<script>
+    function setType(radio) {
+        document.getElementById('search-type-input').value = radio.value;
+        document.querySelectorAll('.type-pill').forEach(p => p.classList.remove('active'));
+        radio.closest('.type-pill').classList.add('active');
+    }
+</script>
+
+</body>
+</html>
