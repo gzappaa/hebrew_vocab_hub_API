@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from config import settings
@@ -7,6 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session
 import logging
 import time
+from app.router import router
+from fastapi.responses import JSONResponse
+
+
+
 
 # basic logging config — reads from settings
 logging.basicConfig(
@@ -14,7 +19,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
 )
 
-logger = logging.getLogger("hebrew_vocab_hub")
+logger = logging.getLogger("hebrew_vocab_hub_log")
 
 
 
@@ -26,12 +31,15 @@ app = FastAPI(
     docs_url="/docs" if settings.DEBUG else None,
 )
 
+app.include_router(router)
 templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/ping-db")
 async def ping_db(session: AsyncSession = Depends(get_session)):
     await session.execute(text("SELECT 1"))
     return {"status": "ok", "db": "connected"}
+
+
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -41,6 +49,26 @@ async def log_requests(request: Request, call_next):
     logger.info(f"{request.method} {request.url.path} → {response.status_code} ({duration}ms)")
     return response
 
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    logger.warning(f"{request.method} {request.url.path} → {exc.status_code}: {exc.detail}")
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+
+
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse(request, "index.html")
+
+# DELETE THIS 
+@app.get("/test-lemmas")
+async def test_lemmas(session: AsyncSession = Depends(get_session)):
+    rows = await session.execute(text("""
+        SELECT id, hebrew, meaning 
+        FROM lemmas 
+        LIMIT 5
+    """))
+    results = [dict(r) for r in rows.mappings()]
+    return results
