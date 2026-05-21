@@ -75,6 +75,118 @@ async def search_by_meaning(
 
 
 
+async def search_by_word(
+    session: AsyncSession, query: str, limit: int = 100, deep: bool = False
+) -> SearchResponse:
+
+
+
+    logger.debug(f"searching by word={query}")
+    where = """
+        WHERE cell_hebrew_plain = :q
+        OR cell_hebrew_plain % :q
+    """ if deep else """
+        WHERE cell_hebrew_plain = :q
+    """
+    distinct = "" if deep else "DISTINCT ON (lemma_id)" 
+
+
+
+    rows = (await session.execute(text(f"""
+        SELECT {distinct}
+            lemma_id, lemma_hebrew, lemma_meaning, part_of_speech,
+            lemma_transcription, root_id, root_display, root_normalized,
+            cell_hebrew, cell_transcription, cell_meaning, labels AS cell_labels
+        FROM v_cell_search
+        {where}
+        ORDER BY lemma_id
+        LIMIT :lim
+    """), {"q": query, "lim": limit})).mappings().all()
+
+    hits = [_row_to_hit(r) for r in rows]
+    return SearchResponse(query=query, type="word", total=len(hits), exact=False, results=hits)
+
+
+
+async def search_by_pos(
+    session: AsyncSession, query: str, limit: int = 1000, deep: bool = False
+) -> SearchResponse:
+    logger.debug(f"searching by part_of_speech={query}")
+    rows = (await session.execute(text("""
+        SELECT DISTINCT ON (lemma_id)
+            lemma_id, lemma_hebrew, lemma_meaning, part_of_speech,
+            lemma_transcription, root_id, root_display, root_normalized,
+            cell_hebrew, cell_transcription, cell_meaning, labels AS cell_labels
+        FROM v_cell_search
+        WHERE part_of_speech_plain ILIKE :pat
+        ORDER BY lemma_id
+        LIMIT :lim
+    """), {"pat": f"%{query}%", "lim": limit})).mappings().all()
+
+    hits = [_row_to_hit(r) for r in rows]
+    return SearchResponse(query=query, type="part_of_speech", total=len(hits), exact=False, results=hits)
+
+
+
+async def search_by_root(
+    session: AsyncSession, query: str, limit: int = 1000, deep: bool = False
+) -> SearchResponse:
+    logger.debug(f"searching by part_of_speech={query}")
+    rows = (await session.execute(text("""
+        SELECT DISTINCT ON (lemma_id)
+            lemma_id, lemma_hebrew, lemma_meaning, part_of_speech,
+            lemma_transcription, root_id, root_display, root_normalized,
+            cell_hebrew, cell_transcription, cell_meaning, labels AS cell_labels
+        FROM v_cell_search
+        WHERE root_normalized ILIKE :pat
+        ORDER BY lemma_id
+        LIMIT :lim
+    """), {"pat": f"%{query}%", "lim": limit})).mappings().all()
+
+    hits = [_row_to_hit(r) for r in rows]
+    return SearchResponse(query=query, type="root", total=len(hits), exact=False, results=hits)
+
+
+async def search_by_transcription(
+    session: AsyncSession, query: str, limit: int = 1000, deep: bool = False
+) -> SearchResponse:
+    logger.debug(f"searching by transcription={query}")
+    rows = (await session.execute(text("""
+        WITH results AS (
+            SELECT DISTINCT ON (lemma_id)
+                lemma_id, lemma_hebrew, lemma_meaning, part_of_speech,
+                lemma_transcription, root_id, root_display, root_normalized,
+                cell_hebrew, cell_transcription, cell_meaning, labels AS cell_labels,
+                similarity(cell_transcription_plain, :q) AS score
+            FROM v_cell_search
+            WHERE cell_transcription_plain % :q
+            ORDER BY lemma_id, similarity(cell_transcription_plain, :q) DESC
+        )
+        SELECT * FROM results
+        WHERE score = 1.0
+
+        UNION ALL
+
+        SELECT * FROM (
+            SELECT * FROM results
+            WHERE score < 1.0
+            ORDER BY score DESC
+            LIMIT 5
+        ) fuzzy
+        WHERE NOT EXISTS (SELECT 1 FROM results WHERE score = 1.0)
+
+        ORDER BY score DESC
+        LIMIT :lim
+    """), {"q": query.lower(), "lim": limit})).mappings().all()
+
+    exact = any(r["score"] == 1.0 for r in rows)
+    hits = [_row_to_hit(r) for r in rows]
+    return SearchResponse(query=query, type="transcription", total=len(hits), exact=exact, results=hits)
+
+
+
+
+
 
 def _row_to_hit(r) -> SearchHit:
     root = None

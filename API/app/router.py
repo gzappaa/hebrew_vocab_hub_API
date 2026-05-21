@@ -3,7 +3,15 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session
 from app.schemas import BrowseResponse, SearchResponse
-from app.queries import browse_lemmas, search_by_meaning
+from app.queries import (
+    browse_lemmas,
+    search_by_meaning,
+    search_by_pos,
+    search_by_root,
+    search_by_word,
+    search_by_transcription,
+)
+
 
 router = APIRouter()
 
@@ -19,13 +27,17 @@ async def browse(
 
 SEARCH_HANDLERS = {
     "meaning": search_by_meaning,
+    "word": search_by_word,
+    "pos": search_by_pos,
+    "root": search_by_root,
+    "transcription": search_by_transcription,
 }
 
 @router.get("/api/search", response_model=SearchResponse)
 async def search(
     query: str,
     type: str = "meaning",
-    limit: int = 1000,
+    limit: int = 5000,
     deep: bool = False,
     session: AsyncSession = Depends(get_session),
 ):  
