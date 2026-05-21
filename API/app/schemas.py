@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 
 class RootOut(BaseModel):
-    id: UUID
+    id: Optional[UUID] = None
     display: str
     normalized: str
     model_config = ConfigDict(from_attributes=True)
@@ -23,3 +23,24 @@ class BrowseResponse(BaseModel):
     page_size: int
     total_pages: int
     results: list[LemmaSummary]
+
+class SearchHit(BaseModel):
+    lemma_id: UUID
+    lemma_hebrew: str
+    lemma_meaning: str
+    lemma_transcription: Optional[str] = None
+    part_of_speech: Optional[str] = None
+    root: Optional[RootOut] = None
+    cell_hebrew: Optional[str] = None
+    cell_transcription: Optional[str] = None
+    cell_meaning: Optional[str] = None
+    cell_labels: Optional[list[str]] = None
+    score: Optional[float] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class SearchResponse(BaseModel):
+    query: str
+    type: str
+    total: int
+    exact: bool
+    results: list[SearchHit]
