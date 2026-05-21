@@ -17,7 +17,6 @@ async def browse_lemmas(
     count = (await session.execute(text("SELECT count(*) FROM lemmas"))).scalar()
 
     total_pages = (count + page_size - 1) // page_size
-
     logger.debug(f"browse_lemmas page={page} page_size={page_size} total={count}")
 
 
@@ -46,20 +45,26 @@ async def browse_lemmas(
     )
 
 async def search_by_meaning(
-    session: AsyncSession, query: str, limit: int = 20
+    session: AsyncSession, query: str, limit: int = 1000, deep: bool = False
 ) -> SearchResponse:
-    rows = (await session.execute(text("""
-        SELECT DISTINCT ON (lemma_id)
-            lemma_id,
-            lemma_hebrew,
-            lemma_meaning,
-            part_of_speech,
-            lemma_transcription,
-            root_id,
-            root_display,
-            root_normalized
-        FROM v_cell_search
+
+    logger.debug(f"searching for word={query}, deep-search={deep}")
+
+    where = """
         WHERE lemma_meaning ILIKE :pat
+        OR cell_meaning ILIKE :pat
+    """ if deep else """
+        WHERE lemma_meaning ILIKE :pat
+    """
+    distinct = "" if deep else "DISTINCT ON (lemma_id)" 
+
+    rows = (await session.execute(text(f"""
+        SELECT {distinct}
+            lemma_id, lemma_hebrew, lemma_meaning, part_of_speech,
+            lemma_transcription, root_id, root_display, root_normalized,
+            cell_hebrew, cell_transcription, cell_meaning, labels AS cell_labels
+        FROM v_cell_search
+        {where}
         ORDER BY lemma_id
         LIMIT :lim
     """), {"pat": f"%{query}%", "lim": limit})).mappings().all()
@@ -68,9 +73,12 @@ async def search_by_meaning(
     return SearchResponse(query=query, type="meaning", total=len(hits), exact=False, results=hits)
 
 
+
+
+
 def _row_to_hit(r) -> SearchHit:
     root = None
-    if r.get("root_display") and r.get("root_normalized"):
+    if r.get("root_id"):
         root = RootOut(
             id=r.get("root_id"),
             display=r["root_display"],

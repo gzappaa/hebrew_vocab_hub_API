@@ -4,8 +4,8 @@ from uuid import UUID
 
 class RootOut(BaseModel):
     id: Optional[UUID] = None
-    display: str
-    normalized: str
+    display: Optional[str] = None
+    normalized: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 class LemmaSummary(BaseModel):
