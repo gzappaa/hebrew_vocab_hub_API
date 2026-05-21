@@ -1,9 +1,20 @@
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas import LemmaSummary, BrowseResponse, SearchResponse, SearchHit, RootOut
-import math
 from fastapi import HTTPException
+from typing import Optional
 import logging
+from app.schemas import  (LemmaSummary,
+    BrowseResponse, 
+    SearchResponse, 
+    SearchHit, 
+    RootOut,
+    ConjCell,
+    ConjTable,
+    SentenceOut,
+    WordSourceOut,
+    LemmaDetail,
+)
+
 
 
 logger = logging.getLogger("hebrew_vocab_hub.queries")
@@ -186,6 +197,126 @@ async def search_by_transcription(
 
 
 
+async def get_lemma_detail(
+    session: AsyncSession, lemma_id: str
+) -> Optional[LemmaDetail]:
+
+    logger.debug(f"fetching lemma detail for id={lemma_id}")
+
+    # 1. Core lemma + root
+    row = (await session.execute(text("""
+        SELECT
+            l.id, l.hebrew, l.transcription, l.part_of_speech, l.meaning,
+            r.id AS root_id, r.display AS root_display, r.normalized AS root_normalized
+        FROM lemmas l
+        LEFT JOIN roots r ON r.id = l.root_id
+        WHERE l.id = :id
+    """), {"id": lemma_id})).mappings().first()
+    
+
+    if not row:
+        return None
+
+    root = None
+    if row["root_id"]:
+        root = RootOut(
+            id=row["root_id"],
+            display=row["root_display"],
+            normalized=row["root_normalized"],
+        )
+    
+
+    # 2. Conjugation tables
+    table_rows = (await session.execute(text("""
+        SELECT id, table_index, headers
+        FROM conj_tables
+        WHERE lemma_id = :lid
+        ORDER BY table_index
+    """), {"lid": lemma_id})).mappings().all()
+    
+
+    conj_tables = []
+    for table in table_rows:
+        cell_rows = (await session.execute(text("""
+            SELECT id, labels, hebrew, transcription, meaning
+            FROM conj_cells
+            WHERE table_id = :tid
+            ORDER BY cell_index
+        """), {"tid": table["id"]})).mappings().all()
+        
+
+        conj_tables.append(ConjTable(
+            table_index=table["table_index"],
+            headers=table["headers"] or [],
+            cells=[ConjCell(
+                id=cell["id"],
+                labels=cell["labels"] or [],
+                hebrew=cell["hebrew"],
+                transcription=cell["transcription"],
+                meaning=cell["meaning"],
+            ) for cell in cell_rows]
+        ))
+        
+    # 3. Word IDs for this lemma
+    word_ids = (await session.execute(text("""
+        SELECT w.id
+        FROM words w
+        JOIN word_lemmas wl ON wl.word_id = w.id
+        WHERE wl.lemma_id = :lid
+    """), {"lid": lemma_id})).scalars().all()
+    
+
+    # 4. All sentences
+    sentences = []
+    if word_ids:
+        sent_rows = (await session.execute(text("""
+            SELECT s.id, s.sentence, s.translation, s.source, w.word
+            FROM sentences s
+            JOIN words w ON w.id = s.word_id
+            WHERE s.word_id = ANY(:wids)
+            ORDER BY s.id
+        """), {"wids": list(word_ids)})).mappings().all()
+        
+
+        sentences = [
+            SentenceOut(
+                id=r["id"],
+                sentence=r["sentence"],
+                translation=r["translation"],
+                source=r["source"],
+                word=r["word"],
+            ) for r in sent_rows
+        ]
+
+    # 5. Summed sources
+    sources = None
+    if word_ids:
+        src = (await session.execute(text("""
+            SELECT
+                COALESCE(SUM(songs), 0)   AS songs,
+                COALESCE(SUM(news), 0)    AS news,
+                COALESCE(SUM(youtube), 0) AS youtube,
+                COALESCE(SUM(total), 0)   AS total
+            FROM word_sources
+            WHERE word_id = ANY(:wids)
+        """), {"wids": list(word_ids)})).mappings().first()
+
+        if src and src["total"] > 0:
+            sources = WordSourceOut(**src)
+
+    return LemmaDetail(
+        id=row["id"],
+        hebrew=row["hebrew"],
+        transcription=row["transcription"],
+        part_of_speech=row["part_of_speech"],
+        meaning=row["meaning"],
+        root=root,
+        conj_tables=conj_tables,
+        sentences=sentences,
+        sources=sources,
+    )
+
+
 
 
 def _row_to_hit(r) -> SearchHit:
@@ -198,6 +329,7 @@ def _row_to_hit(r) -> SearchHit:
         )
     return SearchHit(
         lemma_id=r["lemma_id"],
+        lemma_link="api/lemmas/" + str(r["lemma_id"]),
         lemma_hebrew=r["lemma_hebrew"],
         lemma_meaning=r["lemma_meaning"],
         lemma_transcription=r.get("lemma_transcription"),

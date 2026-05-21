@@ -154,7 +154,7 @@ async def test_search_root_no_results(client):
     assert data["results"] == []
 
 
-
+@pytest.mark.anyio
 async def test_search_transcription_exact(client):
     response = await client.get("/api/search?query=katavti&type=transcription")
     assert response.status_code == 200
@@ -164,7 +164,7 @@ async def test_search_transcription_exact(client):
     assert data["exact"] == True
 
 
-
+@pytest.mark.anyio
 async def test_search_transcription_fuzzy(client):
     response = await client.get("/api/search?query=catav&type=transcription")
     assert response.status_code == 200
@@ -174,7 +174,7 @@ async def test_search_transcription_fuzzy(client):
     assert data["exact"] == False
 
 
-
+@pytest.mark.anyio
 async def test_search_transcription_no_results(client):
     response = await client.get("/api/search?query=zzzzzzzzz&type=transcription")
     assert response.status_code == 200
@@ -183,9 +183,58 @@ async def test_search_transcription_no_results(client):
     assert data["exact"] == False
 
 
-
+@pytest.mark.anyio
 async def test_search_transcription_score(client):
     response = await client.get("/api/search?query=katavti&type=transcription")
     data = response.json()
     exact_results = [r for r in data["results"] if r["score"] == 1.0]
     assert len(exact_results) > 0
+
+import pytest
+
+@pytest.mark.anyio
+async def test_get_lemma_detail_ok(client):
+    lemma_id = "78703464-9902-484d-9972-1c427e38f57b"
+
+    res = await client.get(f"/api/lemmas/{lemma_id}")
+    assert res.status_code == 200
+
+    data = res.json()
+
+    # core fields
+    assert data["id"] == lemma_id
+    assert "hebrew" in data
+    assert isinstance(data["hebrew"], str)
+
+    # sentences aggregation
+    assert "sentences" in data
+    assert isinstance(data["sentences"], list)
+
+    if len(data["sentences"]) > 0:
+        s = data["sentences"][0]
+        assert "sentence" in s
+        assert "word" in s
+        assert isinstance(s["sentence"], str)
+        assert isinstance(s["word"], str)
+
+    # sources aggregation
+    assert "sources" in data
+
+    if data["sources"] is not None:
+        assert "songs" in data["sources"]
+        assert "news" in data["sources"]
+        assert "youtube" in data["sources"]
+        assert "total" in data["sources"]
+
+        assert data["sources"]["total"] >= 0
+
+@pytest.mark.anyio
+async def test_get_lemma_detail_not_found(client):
+    fake_id = "00000000-0000-0000-0000-000000000000"
+    res = await client.get(f"/api/lemmas/{fake_id}")
+    assert res.status_code == 404
+
+@pytest.mark.anyio
+async def test_get_lemma_detail_invalid_uuid(client):
+    res = await client.get("/api/lemmas/abc")
+    assert res.status_code == 422

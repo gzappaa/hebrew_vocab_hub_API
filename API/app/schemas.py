@@ -26,6 +26,7 @@ class BrowseResponse(BaseModel):
 
 class SearchHit(BaseModel):
     lemma_id: UUID
+    lemma_link: str
     lemma_hebrew: str
     lemma_meaning: str
     lemma_transcription: Optional[str] = None
@@ -44,3 +45,49 @@ class SearchResponse(BaseModel):
     total: int
     exact: bool
     results: list[SearchHit]
+
+
+class ConjCell(BaseModel):
+    id: Optional[UUID] =  None
+    labels: list[str]
+    hebrew: Optional[str] = None
+    transcription: Optional[str] = None
+    meaning: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ConjTable(BaseModel):
+    id: Optional[UUID] = None
+    headers: list
+    cells: list[ConjCell]
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SentenceOut(BaseModel):
+    id: Optional[UUID] = None
+    sentence: Optional[str] = None
+    translation: Optional[str] = None
+    source: Optional[str] = None
+    word: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WordSourceOut(BaseModel):
+    songs: int
+    news: int
+    youtube: int
+    total: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LemmaDetail(BaseModel):
+    id: Optional[UUID] = None
+    hebrew: Optional[str] = None
+    transcription: Optional[str] = None
+    part_of_speech: Optional[str] = None
+    meaning: Optional[str] = None
+    root: Optional[RootOut] = None
+    conj_tables: list[ConjTable] = []
+    sentences: list[SentenceOut] = []
+    sources: Optional[WordSourceOut] = None
+    model_config = ConfigDict(from_attributes=True)

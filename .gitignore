@@ -12,3 +12,6 @@ DATABASE/tests/__pycache__
 roadmap.txt
 .env.*
 vocab_dataset.json
+py_dump.py
+files.txt
+debug.log

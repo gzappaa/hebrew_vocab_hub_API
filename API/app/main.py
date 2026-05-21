@@ -17,6 +17,10 @@ from fastapi.responses import JSONResponse
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
+    handlers=[
+        logging.FileHandler("debug.log"),
+        logging.StreamHandler()
+    ]
 )
 
 logger = logging.getLogger("hebrew_vocab_hub_log")
@@ -61,14 +65,3 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse(request, "index.html")
-
-# DELETE THIS 
-@app.get("/test-lemmas")
-async def test_lemmas(session: AsyncSession = Depends(get_session)):
-    rows = await session.execute(text("""
-        SELECT id, hebrew, meaning 
-        FROM lemmas 
-        LIMIT 5
-    """))
-    results = [dict(r) for r in rows.mappings()]
-    return results

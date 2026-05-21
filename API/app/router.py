@@ -2,7 +2,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session
-from app.schemas import BrowseResponse, SearchResponse
+from app.schemas import BrowseResponse, SearchResponse, LemmaDetail
+from uuid import UUID
 from app.queries import (
     browse_lemmas,
     search_by_meaning,
@@ -10,6 +11,7 @@ from app.queries import (
     search_by_root,
     search_by_word,
     search_by_transcription,
+    get_lemma_detail,
 )
 
 
@@ -22,6 +24,16 @@ async def browse(
     session: AsyncSession = Depends(get_session),
 ):
     return await browse_lemmas(session, page=page, page_size=page_size)
+
+@router.get("/api/lemmas/{lemma_id}", response_model=LemmaDetail)
+async def lemma_detail(
+    lemma_id: UUID,
+    session: AsyncSession = Depends(get_session),
+):
+    result = await get_lemma_detail(session, str(lemma_id))
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Lemma '{lemma_id}' not found")
+    return result
 
 
 
