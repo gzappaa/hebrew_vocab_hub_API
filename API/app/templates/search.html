@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}{{ query }} — Hebrew Vocab Hub{% endblock %}
+
+{% block styles %}
+main {
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 2rem 1.5rem;
+}
+
+/* ── search bar at top ── */
+.search-wrap { margin-bottom: 1.5rem; }
+
+.search-row {
+    display: flex;
+    border: 1px solid #d0d0d0;
+    border-radius: 3px;
+    background: #fff;
+    overflow: hidden;
+    margin-bottom: 0.6rem;
+}
+.search-row:focus-within { border-color: #aaa; }
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0.65rem 1rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.92rem;
+    color: #1a1a1a;
+    background: transparent;
+}
+.search-input::placeholder { color: #bbb; }
+
+.search-btn {
+    border: none;
+    border-left: 1px solid #d0d0d0;
+    background: #fff;
+    padding: 0 1rem;
+    cursor: pointer;
+    color: #555;
+    font-size: 0.82rem;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: background 0.15s;
+}
+.search-btn:hover { background: #f0f0f0; }
+
+.search-options {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.type-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.type-pill {
+    padding: 0.22rem 0.65rem;
+    border: 1px solid #d8d8d8;
+    border-radius: 2px;
+    font-size: 0.68rem;
+    color: #888;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.12s;
+    user-select: none;
+    font-family: 'IBM Plex Mono', monospace;
+}
+.type-pill input { display: none; }
+.type-pill:hover { border-color: #aaa; color: #444; }
+.type-pill.active {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+    color: #f7f7f7;
+}
+
+.deep-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+}
+.deep-label:hover { color: #444; }
+
+/* ── results ── */
+.results-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: #bbb;
+    margin-bottom: 1rem;
+}
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.result-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    padding: 0.9rem 1.1rem;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: border-color 0.15s;
+}
+.result-card:hover { border-color: #aaa; }
+
+.card-hebrew {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 0.12rem;
+    direction: rtl;
+}
+
+.card-cell-hebrew {
+    font-size: 1.1rem;
+    font-weight: 500;
+    direction: rtl;
+    margin-bottom: 0.12rem;
+}
+
+.card-transcription {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 0.35rem;
+}
+
+.card-meaning {
+    font-size: 0.85rem;
+    color: #1a1a1a;
+    margin-bottom: 0.35rem;
+}
+
+.card-meta {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.card-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: #bbb;
+}
+
+.no-results {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: #bbb;
+    text-align: center;
+    padding: 4rem 0;
+}
+{% endblock %}
+
+{% block main %}
+<main>
+    <div class="search-wrap">
+        <form action="/search" method="get">
+            <input type="hidden" name="type" id="search-type-input" value="{{ type }}">
+
+            <div class="search-row">
+                <input
+                    class="search-input"
+                    type="text"
+                    name="query"
+                    value="{{ query }}"
+                    placeholder="Search…"
+                    autocomplete="off"
+                    dir="auto"
+                >
+                <button class="search-btn" type="submit">search</button>
+            </div>
+
+            <div class="search-options">
+                <div class="type-pills">
+                    <label class="type-pill {% if type == 'meaning' %}active{% endif %}">
+                        <input type="radio" name="type_ui" value="meaning" {% if type == 'meaning' %}checked{% endif %} onchange="setType(this)">
+                        meaning
+                    </label>
+                    <label class="type-pill {% if type == 'word' %}active{% endif %}">
+                        <input type="radio" name="type_ui" value="word" {% if type == 'word' %}checked{% endif %} onchange="setType(this)">
+                        word
+                    </label>
+                    <label class="type-pill {% if type == 'transcription' %}active{% endif %}">
+                        <input type="radio" name="type_ui" value="transcription" {% if type == 'transcription' %}checked{% endif %} onchange="setType(this)">
+                        transcription
+                    </label>
+                    <label class="type-pill {% if type == 'pos' %}active{% endif %}">
+                        <input type="radio" name="type_ui" value="pos" {% if type == 'pos' %}checked{% endif %} onchange="setType(this)">
+                        part of speech
+                    </label>
+                    <label class="type-pill {% if type == 'root' %}active{% endif %}">
+                        <input type="radio" name="type_ui" value="root" {% if type == 'root' %}checked{% endif %} onchange="setType(this)">
+                        root
+                    </label>
+                </div>
+
+                <label class="deep-label">
+                    <input type="checkbox" name="deep" value="true" {% if deep %}checked{% endif %}>
+                    deep
+                </label>
+            </div>
+        </form>
+    </div>
+
+    {% if results %}
+        <div class="results-meta">
+            {{ results.total }} result{% if results.total != 1 %}s{% endif %} for "{{ query }}"
+            {% if results.exact %} · exact match{% endif %}
+        </div>
+
+        <div class="results-list">
+            {% for hit in results.results %}
+                <a class="result-card" href="{{ hit.lemma_url }}">
+
+                    {% if deep and hit.cell_hebrew %}
+                        <div class="card-cell-hebrew">{{ hit.cell_hebrew }}</div>
+                        {% if hit.cell_transcription %}
+                            <div class="card-transcription">{{ hit.cell_transcription }}</div>
+                        {% endif %}
+                        {% if hit.cell_meaning %}
+                            <div class="card-meaning">{{ hit.cell_meaning }}</div>
+                        {% endif %}
+                    {% else %}
+                        <div class="card-hebrew">{{ hit.lemma_hebrew }}</div>
+                        {% if hit.lemma_transcription %}
+                            <div class="card-transcription">{{ hit.lemma_transcription }}</div>
+                        {% endif %}
+                        <div class="card-meaning">{{ hit.lemma_meaning }}</div>
+                    {% endif %}
+
+                    <div class="card-meta">
+                        {% if hit.part_of_speech %}
+                            <span class="card-tag">{{ hit.part_of_speech }}</span>
+                        {% endif %}
+                        {% if hit.root %}
+                            <span class="card-tag">{{ hit.root.display }}</span>
+                        {% endif %}
+                    </div>
+
+                </a>
+            {% endfor %}
+        </div>
+
+    {% elif query %}
+        <div class="no-results">no results for "{{ query }}"</div>
+    {% endif %}
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function setType(radio) {
+        document.getElementById('search-type-input').value = radio.value;
+        document.querySelectorAll('.type-pill').forEach(p => p.classList.remove('active'));
+        radio.closest('.type-pill').classList.add('active');
+    }
+</script>
+{% endblock %}

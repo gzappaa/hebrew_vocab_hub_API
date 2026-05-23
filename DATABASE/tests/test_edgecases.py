@@ -9,12 +9,16 @@ def normalize(s):
 # ─── EMPTY / INVALID INPUT ───────────────────────────────────
 
 
-def test_empty_hebrew_search_returns_nothing(cur):
+def test_some_entries_can_exist_without_cells(cur):
     cur.execute("""
-        SELECT COUNT(*) FROM v_cell_search
+        SELECT COUNT(*)
+        FROM v_cell_search
         WHERE cell_hebrew_plain IS NULL
     """)
-    assert cur.fetchone()[0] == 0
+
+    null_count = cur.fetchone()[0]
+
+    assert null_count == 210
 
 
 def test_empty_cells_are_known_and_bounded(cur):

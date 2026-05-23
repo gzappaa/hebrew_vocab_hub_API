@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hebrew Vocab Hub{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: #f7f7f7;
+            color: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            border-bottom: 1px solid #e0e0e0;
+            background: #fff;
+            padding: 0 2rem;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 1.8rem; }
+
+        .nav-logo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+
+        .nav-links { list-style: none; display: flex; gap: 1.8rem; }
+        .nav-links a { font-size: 0.8rem; color: #888; text-decoration: none; }
+        .nav-links a:hover { color: #1a1a1a; }
+
+        .author-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            color: #bbb;
+            text-decoration: none;
+            border: 1px solid #e0e0e0;
+            padding: 0.2rem 0.55rem;
+            border-radius: 2px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .author-badge:hover { color: #555; border-color: #aaa; }
+
+        main { flex: 1; }
+
+        footer {
+            border-top: 1px solid #e0e0e0;
+            padding: 1rem 2rem;
+            text-align: center;
+            font-size: 0.72rem;
+            color: #bbb;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        {% block styles %}{% endblock %}
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-left">
+        <a href="/" class="nav-logo">hebrew_vocab_hub</a>
+        <ul class="nav-links">
+            <li><a href="/api/lemmas">browse</a></li>
+            <li><a href="/api/search">api</a></li>
+        </ul>
+    </div>
+    <a href="https://github.com/gzappaa" target="_blank" class="author-badge">gzappaa</a>
+</nav>
+
+{% block main %}{% endblock %}
+
+<footer>
+    hebrew_vocab_hub · api v1
+</footer>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

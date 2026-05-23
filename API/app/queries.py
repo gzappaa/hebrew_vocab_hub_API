@@ -238,7 +238,7 @@ async def get_lemma_detail(
     conj_tables = []
     for table in table_rows:
         cell_rows = (await session.execute(text("""
-            SELECT id, labels, hebrew, transcription, meaning
+            SELECT id, cell_index, row_index, labels, hebrew, transcription, meaning
             FROM conj_cells
             WHERE table_id = :tid
             ORDER BY cell_index
@@ -250,6 +250,8 @@ async def get_lemma_detail(
             headers=table["headers"] or [],
             cells=[ConjCell(
                 id=cell["id"],
+                cell_index=cell["cell_index"],
+                row_index=cell["row_index"],
                 labels=cell["labels"] or [],
                 hebrew=cell["hebrew"],
                 transcription=cell["transcription"],
@@ -329,7 +331,7 @@ def _row_to_hit(r) -> SearchHit:
         )
     return SearchHit(
         lemma_id=r["lemma_id"],
-        lemma_link="api/lemmas/" + str(r["lemma_id"]),
+        lemma_url="/api/lemmas/" + str(r["lemma_id"]),
         lemma_hebrew=r["lemma_hebrew"],
         lemma_meaning=r["lemma_meaning"],
         lemma_transcription=r.get("lemma_transcription"),

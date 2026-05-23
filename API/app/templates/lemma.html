@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lemma.hebrew }} — Hebrew Vocab Hub{% endblock %}
+
+{% block styles %}
+main {
+    max-width: 780px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 2.5rem 1.5rem 4rem;
+}
+
+/* ── header ── */
+.lemma-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.lemma-hebrew {
+    font-size: 2.8rem;
+    font-weight: 500;
+    direction: rtl;
+    line-height: 1.2;
+    margin-bottom: 0.3rem;
+}
+
+.lemma-transcription {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 0.6rem;
+}
+
+.lemma-meaning {
+    font-size: 1.05rem;
+    color: #1a1a1a;
+    margin-bottom: 0.8rem;
+}
+
+.lemma-tags {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: #888;
+    border: 1px solid #e0e0e0;
+    padding: 0.2rem 0.55rem;
+    border-radius: 2px;
+}
+
+/* ── sections ── */
+.section {
+    margin-bottom: 2.5rem;
+}
+
+.section-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+/* ── conjugation table ── */
+.conj-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+}
+
+.conj-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+
+.conj-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: #888;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap;
+}
+
+.conj-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
+}
+
+.conj-table tr:last-child td { border-bottom: none; }
+
+.td-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: #aaa;
+    white-space: nowrap;
+}
+
+.td-person {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: #ccc;
+    white-space: nowrap;
+}
+
+.cell-hebrew {
+    font-size: 1.05rem;
+    font-weight: 500;
+    direction: rtl;
+    display: block;
+    margin-bottom: 0.1rem;
+}
+
+.cell-transcription {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: #888;
+    display: block;
+}
+
+.cell-meaning {
+    font-size: 0.72rem;
+    color: #aaa;
+    display: block;
+    margin-top: 0.1rem;
+}
+
+/* ── sentences ── */
+.sentences-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.sentence-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 3px;
+    padding: 0.8rem 1rem;
+}
+
+.sentence-he {
+    font-size: 1rem;
+    direction: rtl;
+    margin-bottom: 0.25rem;
+}
+
+.sentence-en {
+    font-size: 0.82rem;
+    color: #888;
+}
+
+.sentence-source {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: #ccc;
+    margin-top: 0.3rem;
+}
+
+/* ── sources ── */
+.sources-grid {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.source-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 3px;
+    padding: 0.8rem 1.2rem;
+    text-align: center;
+    min-width: 90px;
+}
+
+.source-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    display: block;
+}
+
+.source-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: #bbb;
+    display: block;
+    margin-top: 0.2rem;
+}
+{% endblock %}
+
+{% block main %}
+<main>
+
+    <!-- ── header ── -->
+    <div class="lemma-header">
+        <div class="lemma-hebrew">{{ lemma.hebrew }}</div>
+        {% if lemma.transcription %}
+            <div class="lemma-transcription">{{ lemma.transcription }}</div>
+        {% endif %}
+        <div class="lemma-meaning">{{ lemma.meaning }}</div>
+        <div class="lemma-tags">
+            {% if lemma.part_of_speech %}
+                <span class="tag">{{ lemma.part_of_speech }}</span>
+            {% endif %}
+            {% if lemma.root %}
+                <span class="tag">{{ lemma.root.display }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── conjugation tables ── -->
+    {% if grouped_tables %}
+    <div class="section">
+        <div class="section-title">conjugation</div>
+
+        {% for table in grouped_tables %}
+        <div class="conj-table-wrap">
+            <table class="conj-table">
+
+                <!-- headers -->
+                {% if table.headers %}
+                    {% for header_row in table.headers %}
+                    <tr>
+                        {% for th in header_row %}
+                            <th colspan="{{ th.colspan }}" rowspan="{{ th.rowspan }}">{{ th.text }}</th>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- rows grouped by tense/form -->
+               <tbody>
+                {% for row_idx, row in table.rows.items() %}
+                <tr>
+                    <td class="td-label">{{ row.labels[0] if row.labels else "" }}</td>
+                    <td class="td-person">{{ row.labels[1] if row.labels|length > 1 else "" }}</td>
+                    {% for col_i in range(table.num_cols) %}
+                    <td>
+                        {% if col_i in row.cells %}
+                            <span class="cell-hebrew">{{ row.cells[col_i].hebrew }}</span>
+                            {% if row.cells[col_i].transcription %}
+                                <span class="cell-transcription">{{ row.cells[col_i].transcription }}</span>
+                            {% endif %}
+                            {% if row.cells[col_i].meaning %}
+                                <span class="cell-meaning">{{ row.cells[col_i].meaning }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                </tbody>
+
+
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ── sentences ── -->
+    {% if lemma.sentences %}
+    <div class="section">
+        <div class="section-title">example sentences</div>
+        <div class="sentences-list">
+            {% for s in lemma.sentences %}
+            <div class="sentence-card">
+                <div class="sentence-he">{{ s.sentence }}</div>
+                {% if s.translation %}
+                    <div class="sentence-en">{{ s.translation }}</div>
+                {% endif %}
+                {% if s.source %}
+                    <div class="sentence-source">{{ s.source }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── sources ── -->
+    {% if lemma.sources %}
+    <div class="section">
+        <div class="section-title">corpus frequency</div>
+        <div class="sources-grid">
+            <div class="source-card">
+                <span class="source-count">{{ lemma.sources.songs }}</span>
+                <span class="source-label">songs</span>
+            </div>
+            <div class="source-card">
+                <span class="source-count">{{ lemma.sources.news }}</span>
+                <span class="source-label">news</span>
+            </div>
+            <div class="source-card">
+                <span class="source-count">{{ lemma.sources.youtube }}</span>
+                <span class="source-label">youtube</span>
+            </div>
+            <div class="source-card">
+                <span class="source-count">{{ lemma.sources.total }}</span>
+                <span class="source-label">total</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</main>
+{% endblock %}

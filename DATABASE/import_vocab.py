@@ -288,7 +288,7 @@ def import_vocab(conn, data: list[dict]):
 
                     cell_rows = []
 
-                    for row in table.get("rows", []):
+                    for r_idx, row in enumerate(table.get("rows", [])):
 
                         labels = row.get("labels", [])
 
@@ -299,7 +299,8 @@ def import_vocab(conn, data: list[dict]):
                                     new_id(),
                                     table_id,
                                     labels,
-                                    c_idx,
+                                    r_idx,      # row_index
+                                    c_idx,      # cell_index
                                     cell.get("hebrew", ""),
                                     strip_nikud(cell.get("hebrew", "")),
                                     normalize_transcription(cell.get("transcription")),
@@ -317,6 +318,7 @@ def import_vocab(conn, data: list[dict]):
                                     id,
                                     table_id,
                                     labels,
+                                    row_index,
                                     cell_index,
                                     hebrew,
                                     hebrew_plain,

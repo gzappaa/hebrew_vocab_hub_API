@@ -26,7 +26,7 @@ class BrowseResponse(BaseModel):
 
 class SearchHit(BaseModel):
     lemma_id: UUID
-    lemma_link: str
+    lemma_url: str
     lemma_hebrew: str
     lemma_meaning: str
     lemma_transcription: Optional[str] = None
@@ -49,6 +49,8 @@ class SearchResponse(BaseModel):
 
 class ConjCell(BaseModel):
     id: Optional[UUID] =  None
+    row_index: Optional[int] =  None
+    cell_index: Optional[int] =  None
     labels: list[str]
     hebrew: Optional[str] = None
     transcription: Optional[str] = None

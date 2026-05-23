@@ -106,6 +106,7 @@ CREATE TABLE conj_cells (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     table_id            UUID NOT NULL REFERENCES conj_tables(id) ON DELETE CASCADE,
     labels              TEXT[] NOT NULL DEFAULT '{}',
+    row_index           INT NOT NULL DEFAULT 0,
     cell_index          INT NOT NULL,
     hebrew              TEXT NOT NULL,
     hebrew_plain        TEXT,
@@ -130,6 +131,10 @@ CREATE INDEX idx_conj_cells_fts
 
 CREATE INDEX idx_conj_cells_hebrew
     ON conj_cells (hebrew);
+
+CREATE INDEX idx_conj_cells_row 
+    ON conj_cells (table_id, row_index, cell_index);
+
 
 CREATE INDEX idx_conj_cells_trgm
     ON conj_cells USING gin (hebrew gin_trgm_ops);
@@ -185,15 +190,16 @@ SELECT
     l.meaning                AS lemma_meaning,
     l.part_of_speech,
     l.part_of_speech_plain,
+    l.hebrew_plain           AS lemma_hebrew_plain,
 
     r.id                     AS root_id,
     r.display                AS root_display,
     r.normalized             AS root_normalized
 
-FROM conj_cells cc
-JOIN conj_tables ct ON ct.id = cc.table_id
-JOIN lemmas l       ON l.id  = ct.lemma_id
-LEFT JOIN roots r   ON r.id  = l.root_id;
+FROM lemmas l
+LEFT JOIN roots r        ON r.id  = l.root_id
+LEFT JOIN conj_tables ct ON ct.lemma_id = l.id
+LEFT JOIN conj_cells cc  ON cc.table_id = ct.id;
 
 
 CREATE VIEW v_word_full AS
