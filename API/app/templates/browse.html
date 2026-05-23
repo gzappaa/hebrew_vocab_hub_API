@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Browse — Hebrew Vocab Hub{% endblock %}
+
+{% block styles %}
+main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    width: 100%;
+}
+
+.meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-bottom: 1rem;
+}
+
+/* ── card ── */
+.card {
+    display: block;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s;
+}
+
+.card:hover {
+    border-color: #aaa;
+}
+
+.hebrew {
+    font-size: 1.3rem;
+    direction: rtl;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.transcription {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.meaning {
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+}
+
+.meta-row {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: #bbb;
+    margin-top: 0.3rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ── pagination ── */
+.pagination {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+}
+{% endblock %}
+
+{% block main %}
+<main>
+
+    <div class="meta">
+        total: {{ data.total }} · page {{ data.page }}/{{ data.total_pages }} · page_size {{ data.page_size }}
+    </div>
+
+    {% for lemma in data.results %}
+        <a class="card" href="{{ lemma.lemma_url }}">
+
+            <div class="hebrew">{{ lemma.hebrew }}</div>
+
+            {% if lemma.transcription %}
+                <div class="transcription">{{ lemma.transcription }}</div>
+            {% endif %}
+
+            {% if lemma.meaning %}
+                <div class="meaning">{{ lemma.meaning }}</div>
+            {% endif %}
+
+            <div class="meta-row">
+                {% if lemma.part_of_speech %}
+                    <span>{{ lemma.part_of_speech }}</span>
+                {% endif %}
+
+                {% if lemma.root %}
+                    <span>{{ lemma.root.display }}</span>
+                {% endif %}
+            </div>
+
+        </a>
+    {% endfor %}
+
+    <div class="pagination">
+
+        {% if data.page > 1 %}
+            <a href="/browse?page={{ data.page - 1 }}">← prev</a>
+        {% else %}
+            <span></span>
+        {% endif %}
+
+        {% if data.page < data.total_pages %}
+            <a href="/browse?page={{ data.page + 1 }}">next →</a>
+        {% else %}
+            <span></span>
+        {% endif %}
+
+    </div>
+
+</main>
+{% endblock %}

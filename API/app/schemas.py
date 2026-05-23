@@ -10,6 +10,7 @@ class RootOut(BaseModel):
 
 class LemmaSummary(BaseModel):
     id: UUID
+    lemma_url: str
     hebrew: str
     transcription: Optional[str] = None
     part_of_speech: Optional[str] = None

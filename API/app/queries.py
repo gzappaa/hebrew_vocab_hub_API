@@ -52,7 +52,13 @@ async def browse_lemmas(
         page=page,
         page_size=page_size,
         total_pages=total_pages,
-        results=[LemmaSummary(**r) for r in rows]
+        results = [
+             LemmaSummary(
+             **r,
+             lemma_url=f"/lemmas/{r['id']}"
+    )
+    for r in rows
+]
     )
 
 async def search_by_meaning(
@@ -238,10 +244,10 @@ async def get_lemma_detail(
     conj_tables = []
     for table in table_rows:
         cell_rows = (await session.execute(text("""
-            SELECT id, cell_index, row_index, labels, hebrew, transcription, meaning
+            SELECT id, row_index, cell_index, labels, hebrew, transcription, meaning
             FROM conj_cells
             WHERE table_id = :tid
-            ORDER BY cell_index
+            ORDER BY row_index, cell_index
         """), {"tid": table["id"]})).mappings().all()
         
 
@@ -250,8 +256,8 @@ async def get_lemma_detail(
             headers=table["headers"] or [],
             cells=[ConjCell(
                 id=cell["id"],
-                cell_index=cell["cell_index"],
                 row_index=cell["row_index"],
+                cell_index=cell["cell_index"],
                 labels=cell["labels"] or [],
                 hebrew=cell["hebrew"],
                 transcription=cell["transcription"],
@@ -331,7 +337,7 @@ def _row_to_hit(r) -> SearchHit:
         )
     return SearchHit(
         lemma_id=r["lemma_id"],
-        lemma_url="/api/lemmas/" + str(r["lemma_id"]),
+        lemma_url="/lemmas/" + str(r["lemma_id"]),
         lemma_hebrew=r["lemma_hebrew"],
         lemma_meaning=r["lemma_meaning"],
         lemma_transcription=r.get("lemma_transcription"),

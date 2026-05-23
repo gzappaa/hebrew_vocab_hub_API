@@ -247,18 +247,25 @@ main {
                 <tr>
                     <td class="td-label">{{ row.labels[0] if row.labels else "" }}</td>
                     <td class="td-person">{{ row.labels[1] if row.labels|length > 1 else "" }}</td>
+                    {% set is_first = row.labels|length > 1 and row.labels[1] == "1st" %}
                     {% for col_i in range(table.num_cols) %}
-                    <td>
                         {% if col_i in row.cells %}
-                            <span class="cell-hebrew">{{ row.cells[col_i].hebrew }}</span>
-                            {% if row.cells[col_i].transcription %}
-                                <span class="cell-transcription">{{ row.cells[col_i].transcription }}</span>
+                            {% if is_first %}
+                                <td colspan="2" style="text-align:center;">
+                            {% else %}
+                                <td>
                             {% endif %}
-                            {% if row.cells[col_i].meaning %}
-                                <span class="cell-meaning">{{ row.cells[col_i].meaning }}</span>
-                            {% endif %}
+                                <span class="cell-hebrew">{{ row.cells[col_i].hebrew }}</span>
+                                {% if row.cells[col_i].transcription %}
+                                    <span class="cell-transcription">{{ row.cells[col_i].transcription }}</span>
+                                {% endif %}
+                                {% if row.cells[col_i].meaning %}
+                                    <span class="cell-meaning">{{ row.cells[col_i].meaning }}</span>
+                                {% endif %}
+                            </td>
+                        {% elif not is_first %}
+                            <td></td>
                         {% endif %}
-                    </td>
                     {% endfor %}
                 </tr>
                 {% endfor %}

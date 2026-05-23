@@ -17,7 +17,7 @@ from app.queries import (
 
 router = APIRouter()
 
-@router.get("/api/lemmas", response_model=BrowseResponse)
+@router.get("/api/browse", response_model=BrowseResponse)
 async def browse(
     page: Annotated[int, Query(ge=1)] = 1,
     page_size: Annotated[int, Query(ge=1, le=100)] = 40,

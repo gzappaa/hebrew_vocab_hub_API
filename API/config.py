@@ -5,6 +5,6 @@ class Settings(BaseSettings):
     ENV: str = "env"
     DEBUG: bool = False
 
-    model_config = SettingsConfigDict(env_file=".env.test")
+    model_config = SettingsConfigDict(env_file=".env.dev")
 
 settings = Settings()
