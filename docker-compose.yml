@@ -9,14 +9,31 @@ services:
       POSTGRES_DB: ${POSTGRESQL_DBNAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./DATABASE/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./DATABASE/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_DBNAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  importer:
+    image: python:3.12-slim
+    volumes:
+      - ./DATABASE:/data
+    working_dir: /data
+    command: >
+      bash -c "pip install psycopg2-binary python-dotenv -q &&
+               python import_vocab.py --prod"
+    env_file:
+      - ./.env
+    environment:
+      POSTGRESQL_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
 
   api:
     build:

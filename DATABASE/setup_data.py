@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
+from pathlib import Path
 import urllib.request
-import os
 
 DATA_URL = (
     "https://drive.usercontent.google.com/download"
@@ -9,13 +9,14 @@ DATA_URL = (
     "&confirm=t"
 )
 
-DATA_PATH = "DATABASE/vocab_dataset.json"
+BASE_DIR = Path(__file__).resolve().parent
+DATA_PATH = BASE_DIR / "DATABASE" / "vocab_dataset.json"
 
 
 def download_data():
-    os.makedirs("DATABASE", exist_ok=True)
+    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-    if os.path.exists(DATA_PATH):
+    if DATA_PATH.exists():
         print("Data already exists, skipping.")
         return
 
