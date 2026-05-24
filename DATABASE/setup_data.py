@@ -17,9 +17,6 @@ ENV_PROD_EXAMPLE = BASE_DIR / "API" / ".env.prod.example"
 ENV_PROD_FILE = BASE_DIR / "API" / ".env.prod"
 
 
-DATA_PATH = BASE_DIR / "vocab_dataset.json"
-
-
 def setup_env():
     if not ENV_FILE.exists():
         ENV_EXAMPLE.rename(ENV_FILE)
