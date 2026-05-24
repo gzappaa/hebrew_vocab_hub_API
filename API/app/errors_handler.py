@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 import logging
 
-logger = logging.getLogger("hebrew_vocab_hub.errors")
+logger = logging.getLogger("hebrew_vocab_hub")
 
 
 def render_error(request: Request, templates: Jinja2Templates, status_code: int, detail):

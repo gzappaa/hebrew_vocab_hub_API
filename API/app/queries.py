@@ -17,7 +17,7 @@ from app.schemas import  (LemmaSummary,
 
 
 
-logger = logging.getLogger("hebrew_vocab_hub.queries")
+logger = logging.getLogger("hebrew_vocab_hub")
 
 
 

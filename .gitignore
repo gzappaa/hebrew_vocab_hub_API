@@ -15,3 +15,6 @@ vocab_dataset.json
 py_dump.py
 files.txt
 debug.log
+app.log
+tu.py
+project_structure.txt

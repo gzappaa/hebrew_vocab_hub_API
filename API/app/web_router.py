@@ -1,11 +1,9 @@
-from fastapi import APIRouter, Request, Depends, Query, HTTPException, Request
+from fastapi import APIRouter, Request, Depends, Query, HTTPException
 from fastapi.templating import Jinja2Templates
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import OrderedDict
 from uuid import UUID
-
+import logging
 from app.database import get_session
 from app.queries import (
     browse_lemmas,
@@ -18,7 +16,7 @@ from app.queries import (
 )
 
 
-
+logger = logging.getLogger("hebrew_vocab_hub")
 
 router = APIRouter()
 
@@ -48,7 +46,7 @@ async def search_page(
     deep: bool = False,
     session: AsyncSession = Depends(get_session),
 ):
-    print(f"DEBUG type={type} query={query} deep={deep}")
+    logger.info(f"SEARCH_PAGE type={type} query={query} deep={deep}")
     results = None
     if query:
         handler = SEARCH_HANDLERS.get(type, search_by_meaning)
@@ -68,8 +66,10 @@ async def lemma_page(
     lemma_id: UUID,
     session: AsyncSession = Depends(get_session),
 ):
+    logger.info(f"LEMMA_PAGE id={lemma_id}")
     lemma = await get_lemma_detail(session, lemma_id)
     if not lemma:
+        logger.warning(f"LEMMA_PAGE NOT FOUND id={lemma_id}")
         raise HTTPException(status_code=404, detail="Lemma not found")
 
     grouped_tables = []
@@ -104,7 +104,8 @@ async def browse_html(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     session: AsyncSession = Depends(get_session),
-):
+):   
+    logger.info(f"BROWSE_HTML page={page} size={page_size}")
     results = await browse_lemmas(session, page=page, page_size=page_size)
 
     return templates.TemplateResponse(

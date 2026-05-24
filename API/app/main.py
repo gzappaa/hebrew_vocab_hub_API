@@ -10,22 +10,12 @@ from app.api_router import router as api_router
 from app.web_router import router as web_router
 from fastapi.responses import JSONResponse
 from app.errors_handler import register_exception_handlers
+from logging_conf import configure_logging
+import logging
 
 
-# basic logging config — reads from settings
-logging.basicConfig(
-    level=logging.DEBUG if settings.DEBUG else logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
-    handlers=[
-        logging.FileHandler("debug.log"),
-        logging.StreamHandler()
-    ]
-)
-
-logger = logging.getLogger("hebrew_vocab_hub_log")
-
-
-
+logger = logging.getLogger("hebrew_vocab_hub")
+configure_logging(debug=settings.DEBUG)
 
 
 app = FastAPI(
