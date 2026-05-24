@@ -1,4 +1,3 @@
-.env
 venv
 catav.json
 here.txt
@@ -10,7 +9,6 @@ __pycache__/
 DATABASE/tests/__pycache__
 .pytest_cache/
 roadmap.txt
-.env.*
 vocab_dataset.json
 py_dump.py
 files.txt
@@ -18,3 +16,7 @@ debug.log
 app.log
 tu.py
 project_structure.txt
+.env.dev
+.env.prod
+.env.test
+.env
